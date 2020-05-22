@@ -15,33 +15,38 @@ app.use(cors());
 app.use(express.json());
 app.get("/", async function (req, res) {
   if (!req.query.url) throw new Error("No URL was passed!");
-  const { data, error } = await axios.get(req.query.url, {
-    headers: {
-      Origin: "http://www.intervaltimer.com",
-    },
-  });
 
-  const html = HTMLParser.parse(data, { style: true });
-  const intervals = Array.from(html.querySelectorAll(".preview-list-item"));
-  const parsedIntervals = intervals.map((interval) => {
-    const parts = interval.rawText.split(" ");
-    const duration = parseSeconds(parts.pop());
-    const name = parts.join(" ");
-    let color = "";
-    const rawS = interval.rawAttrs.split(": ");
-    const styleParts = rawS
-      .flatMap((p) => p.split('="'))
-      .flatMap((p) => p.split(";"));
-    const bColorIndex = styleParts.findIndex((v) => v === "background-color");
+  try {
+    const { data, error } = await axios.get(req.query.url, {
+      headers: {
+        Origin: "http://www.intervaltimer.com",
+      },
+    });
 
-    if (bColorIndex !== -1 && bColorIndex < styleParts.length - 1) {
-      color = styleParts[bColorIndex + 1];
-    }
+    const html = HTMLParser.parse(data, { style: true });
+    const intervals = Array.from(html.querySelectorAll(".preview-list-item"));
+    const parsedIntervals = intervals.map((interval) => {
+      const parts = interval.rawText.split(" ");
+      const duration = parseSeconds(parts.pop());
+      const name = parts.join(" ");
+      let color = "";
+      const rawS = interval.rawAttrs.split(": ");
+      const styleParts = rawS
+        .flatMap((p) => p.split('="'))
+        .flatMap((p) => p.split(";"));
+      const bColorIndex = styleParts.findIndex((v) => v === "background-color");
 
-    return { duration, name, color };
-  });
+      if (bColorIndex !== -1 && bColorIndex < styleParts.length - 1) {
+        color = styleParts[bColorIndex + 1];
+      }
 
-  res.json(parsedIntervals);
+      return { duration, name, color };
+    });
+
+    res.json(parsedIntervals);
+  } catch (err) {
+    throw err;
+  }
 });
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
