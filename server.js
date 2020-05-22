@@ -17,11 +17,16 @@ app.get("/", async function (req, res) {
   if (!req.query.url) throw new Error("No URL was passed!");
 
   try {
-    const { data, error } = await axios.get(req.query.url, {
-      headers: {
-        Origin: "http://www.intervaltimer.com",
-      },
-    });
+    const { data, error } = await axios
+      .get(req.query.url, {
+        headers: {
+          Origin: "http://www.intervaltimer.com",
+        },
+      })
+      .catch((e) => {
+        console.log(e);
+        throw e;
+      });
 
     const html = HTMLParser.parse(data, { style: true });
     const intervals = Array.from(html.querySelectorAll(".preview-list-item"));
@@ -45,6 +50,7 @@ app.get("/", async function (req, res) {
 
     res.json(parsedIntervals);
   } catch (err) {
+    console.log(e);
     throw err;
   }
 });
