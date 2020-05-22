@@ -43,7 +43,7 @@ app.get("/", async function (req, res) {
 
   res.json(parsedIntervals);
 });
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`🚀 Api running on port: ${PORT}`);
 });
